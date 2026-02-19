@@ -1,9 +1,31 @@
 // prisma/schema.prisma
 
 datasource db {
-  provider = "postgres" // O "postgresql" según versión de Prisma
+  provider = "postgres"
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+model User {
+  id        String        @id @default(uuid())
+  email     String        @unique
+  name      String?
+  createdAt DateTime      @default(now())
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  date      DateTime
+  notes     String?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

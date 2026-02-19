@@ -1,9 +1,14 @@
-// src/test-db.ts
 import { prisma } from "./prisma";
 
 async function main() {
-  const result = await prisma.$queryRaw`SELECT 1 as ok`;
-  console.log(result);
+  const user = await prisma.user.create({
+    data: {
+      email: "test@test.com",
+      name: "Mariano",
+    },
+  });
+
+  console.log(user);
 }
 
 main()
