@@ -1,24 +1,86 @@
-# OS
+# =========================
+# OS / Editor
+# =========================
 .DS_Store
+*.swp
+*.swo
 
+# =========================
 # Logs
+# =========================
 *.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
-# Env files
+# =========================
+# Environment files
+# =========================
 .env
 .env.local
 .env.*.local
+.env*.local
 
-# Node
+# =========================
+# Node dependencies
+# =========================
 node_modules/
 
-# Expo
-.expo/
-.expo-shared/
-
-# Build
+# =========================
+# Build outputs
+# =========================
 dist/
 build/
+web-build/
 
+# =========================
+# Expo / React Native
+# =========================
+.expo/
+.expo-shared/
+expo-env.d.ts
+
+# Metro
+.metro-health-check*
+
+# Generated native folders (Expo prebuild)
+ios/
+android/
+
+# =========================
+# React Native / Native secrets & keys
+# =========================
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Kotlin
+.kotlin/
+
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
 # Prisma
+# =========================
 prisma/dev.db
+src/generated/prisma
+
+# =========================
+# Yarn (Berry)
+# =========================
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# =========================
+# Misc
+# =========================
+*.orig.*
+app-example
