@@ -7,7 +7,7 @@ Fullstack project for appointment booking.
 - Expo + React Native (iOS / Android / Web)
 - Node.js + Express
 - Prisma ORM
-- PostgreSQL (Supabase)
+- PostgreSQL (Neon)
 
 ## Structure
 

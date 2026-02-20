@@ -1,48 +1,44 @@
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { API_URL } from "../../lib/api";
 
-export default function TabHomeScreen() {
+export default function HomeScreen() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/users`)
+      .then(res => res.json())
+      .then(data => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching users:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <ActivityIndicator size="large" />;
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Appointments</Text>
-        <Text style={styles.subtitle}>
-          Expo + React Native + Node + Prisma + Supabase
-        </Text>
-      </View>
+    <View style={{ flex: 1, padding: 20 }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>
+        Users
+      </Text>
 
-      <StatusBar style="light" />
-    </SafeAreaView>
+      <FlatList
+        data={users}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={{ marginBottom: 10 }}>
+            <Text>{item.name}</Text>
+            <Text>{item.email}</Text>
+          </View>
+        )}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0B1220",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#111B2E",
-    padding: 22,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "white",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.75)",
-    lineHeight: 20,
-  },
-});
-
