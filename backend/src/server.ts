@@ -2,37 +2,34 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { prisma } from "./prisma";
+import authRoutes from "./routes/auth";
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Healthcheck
+// ===============================
+// AUTH ROUTES
+// ===============================
+app.use("/auth", authRoutes);
+
+// ===============================
+// HEALTHCHECK
+// ===============================
 app.get("/health", async (req, res) => {
-  const result = await prisma.$queryRaw`SELECT 1 as ok`;
-  res.json({ status: "ok", db: result });
-});
-
-// USERS
-app.post("/users", async (req, res) => {
   try {
-    const { email, name } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: "email is required" });
-    }
-
-    const user = await prisma.user.create({
-      data: { email, name },
-    });
-
-    res.json(user);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const result = await prisma.$queryRaw`SELECT 1 as ok`;
+    res.json({ status: "ok", db: result });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "DB connection failed" });
   }
 });
 
+// ===============================
+// USERS
+// ===============================
 app.get("/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany({
@@ -45,7 +42,9 @@ app.get("/users", async (req, res) => {
   }
 });
 
+// ===============================
 // APPOINTMENTS
+// ===============================
 app.post("/appointments", async (req, res) => {
   try {
     const { userId, date, notes } = req.body;
@@ -62,7 +61,7 @@ app.post("/appointments", async (req, res) => {
       },
     });
 
-    res.json(appointment);
+    res.status(201).json(appointment);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -81,6 +80,9 @@ app.get("/appointments", async (req, res) => {
   }
 });
 
+// ===============================
+// START SERVER
+// ===============================
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
