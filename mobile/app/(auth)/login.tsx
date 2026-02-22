@@ -1,85 +1,91 @@
-import { Link } from "expo-router";
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useState, useContext } from "react";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+
+import { AuthContext } from "../../context/AuthContext";
+import { layout } from "@/theme/layout";
+import { colors } from "@/theme/colors";
 
 export default function LoginScreen() {
+  const { login } = useContext(AuthContext);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin() {
+    try {
+      setLoading(true);
+      await login(email, password);
+    } catch (error) {
+      alert("Credenciales inválidas");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Iniciar sesión</Text>
+    <SafeAreaView style={layout.container}>
+      <View style={layout.card}>
+        <Text style={layout.title}>User Login</Text>
 
         <TextInput
           placeholder="Email"
-          placeholderTextColor="rgba(255,255,255,0.45)"
-          style={styles.input}
+          placeholderTextColor="#999"
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
-          keyboardType="email-address"
+          style={{
+            borderWidth: 1,
+            borderColor: "#ddd",
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 12,
+            fontSize: 16,
+          }}
         />
 
         <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor="rgba(255,255,255,0.45)"
-          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#999"
           secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={{
+            borderWidth: 1,
+            borderColor: "#ddd",
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 20,
+            fontSize: 16,
+          }}
         />
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>¿No tenés cuenta?</Text>
-          <Link href="/(auth)/register" style={styles.link}>
-            Registrate
-          </Link>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Volver a</Text>
-          <Link href="/(tabs)" style={styles.link}>
-            Home
-          </Link>
-        </View>
+        <TouchableOpacity
+          onPress={handleLogin}
+          disabled={loading}
+          style={{
+            backgroundColor: colors.primary,
+            padding: 14,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}>
+              Entrar
+            </Text>
+          )}
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0B1220",
-    padding: 20,
-    justifyContent: "center",
-  },
-  card: {
-    backgroundColor: "#111B2E",
-    padding: 20,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "white",
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
-    color: "white",
-    marginBottom: 12,
-  },
-  footer: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 12,
-  },
-  footerText: {
-    color: "rgba(255,255,255,0.7)",
-  },
-  link: {
-    color: "#5BC0EB",
-    fontWeight: "700",
-  },
-});

@@ -1,52 +1,117 @@
-import { Link } from "expo-router";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { useContext } from "react";
+import {
+  SafeAreaView,
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+
+import { AuthContext } from "@/context/AuthContext";
+import { layout } from "@/theme/layout";
+import { colors } from "@/theme/colors";
 
 export default function ProfileScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Perfil</Text>
-        <Text style={styles.subtitle}>
-          Acá va a ir tu perfil, cerrar sesión, y settings.
-        </Text>
+  const { user, logout, isLoading, token } = useContext(AuthContext);
 
-        <View style={{ marginTop: 16 }}>
-          <Link href="/(auth)/login" style={styles.link}>
-            Ir a Login
-          </Link>
+  if (isLoading) {
+    return (
+      <SafeAreaView style={layout.container}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!token) return null;
+
+  if (!user) {
+    return (
+      <SafeAreaView style={layout.container}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={layout.container}>
+      <View style={[layout.card, styles.card]}>
+        <Text style={[layout.title, styles.title]}>Mi Perfil</Text>
+
+        <View style={styles.divider} />
+
+        <View style={styles.section}>
+          <ProfileItem
+            label="Nombre"
+            value={`${user.firstName} ${user.lastName}`}
+          />
+          <ProfileItem label="Email" value={user.email} />
+          {user.phone && <ProfileItem label="Teléfono" value={user.phone} />}
+          {user.address && <ProfileItem label="Dirección" value={user.address} />}
         </View>
+
+        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
+function ProfileItem({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.itemContainer}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0B1220",
-    padding: 20,
-  },
   card: {
-    backgroundColor: "#111B2E",
-    padding: 20,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    paddingVertical: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "white",
-    marginBottom: 10,
+    textAlign: "center",
   },
-  subtitle: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.75)",
-    lineHeight: 20,
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 20,
+    opacity: 0.4,
   },
-  link: {
-    color: "#5BC0EB",
-    fontWeight: "800",
+  section: {
+    gap: 18,
+    marginBottom: 30,
+  },
+  itemContainer: {
+    backgroundColor: "#F8FAFC",
+    padding: 14,
+    borderRadius: 10,
+  },
+  label: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "600",
+    marginBottom: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  value: {
+    fontSize: 16,
+    color: "#111827",
+    fontWeight: "500",
+  },
+  logoutButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    elevation: 2,
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 16,
   },
 });
