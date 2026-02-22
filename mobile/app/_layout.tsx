@@ -1,25 +1,37 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import { Slot, Redirect, useSegments } from "expo-router";
+import { useContext } from "react";
+import { AuthContext, AuthProvider } from "../context/AuthContext";
+import { View, ActivityIndicator } from "react-native";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
+function RootLayoutNav() {
+  const segments = useSegments(); // 👈 SIEMPRE primero
+  const { token, isLoading } = useContext(AuthContext); // 👈 SIEMPRE después
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+  const inAuthGroup = segments[0] === "(auth)";
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
-  return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+  if (!token && !inAuthGroup) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+  if (token && inAuthGroup) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Slot />;
 }
 
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
+}

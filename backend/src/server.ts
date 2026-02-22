@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { prisma } from "./prisma";
 import authRoutes from "./routes/auth";
+import appointmentsRoutes from "./routes/appointments";
 
 const app = express();
 
@@ -14,6 +15,11 @@ app.use(express.json());
 // AUTH ROUTES
 // ===============================
 app.use("/auth", authRoutes);
+
+// ===============================
+// APPOINTMENTS ROUTES
+// ===============================
+app.use("/appointments", appointmentsRoutes);
 
 // ===============================
 // HEALTHCHECK
