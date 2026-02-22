@@ -19,19 +19,35 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  appointments Appointment[]
+  tasks     Task[]  
 }
 
-
-model Appointment {
-  id        String   @id @default(uuid())
-  date      DateTime
+model Task {
+  id        String        @id @default(uuid())
+  title     String
   notes     String?
+  deadline  DateTime
+
+  status    TaskStatus    @default(ANALISIS)
+  priority  TaskPriority  @default(MEDIUM)
 
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@index([userId])
+}
+
+enum TaskStatus {
+  ANALISIS
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
 }

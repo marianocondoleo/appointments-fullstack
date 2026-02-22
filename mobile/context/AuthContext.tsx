@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   async function loadToken() {
-    console.log("🔥 loadToken ejecutado");
+    if (__DEV__) console.log("🔥 loadToken ejecutado");
 
     try {
       let storedToken: string | null = null;
@@ -37,34 +37,34 @@ export const AuthProvider = ({ children }: any) => {
         storedToken = await SecureStore.getItemAsync("token");
       }
 
-      console.log("📦 Stored token:", storedToken);
+      if (__DEV__)console.log("📦 Stored token:", storedToken);
 
       if (!storedToken) {
-        console.log("❌ No stored token");
+        if (__DEV__) console.log("❌ No stored token");
         return;
       }
 
       api.defaults.headers.Authorization = `Bearer ${storedToken}`;
       setToken(storedToken);
 
-      console.log("📡 Calling /auth/me...");
+      if (__DEV__)console.log("📡 Calling /auth/me...");
 
       const response = await api.get("/auth/me");
 
-      console.log("✅ User restored:", response.data);
+      if (__DEV__)console.log("✅ User restored:", response.data);
 
       setUser(response.data);
     } catch (error: any) {
-      console.log("🚨 Error restoring session:", error?.response?.data || error);
+      if (__DEV__)console.log("🚨 Error restoring session:", error?.response?.data || error);
       await logout();
     } finally {
-      console.log("🔚 isLoading -> false");
+      if (__DEV__)console.log("🔚 isLoading -> false");
       setIsLoading(false);
     }
   }
 
   async function login(email: string, password: string) {
-    console.log("🔐 Login attempt");
+    if (__DEV__)console.log("🔐 Login attempt");
 
     const response = await api.post("/auth/login", {
       email,
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: any) => {
 
     const { token, user } = response.data;
 
-    console.log("✅ Login success:", user);
+    if (__DEV__)console.log("✅ Login success:", user);
 
     if (Platform.OS === "web") {
       localStorage.setItem("token", token);
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: any) => {
   }
 
   async function logout() {
-    console.log("🚪 Logout");
+    if (__DEV__)console.log("🚪 Logout");
 
     if (Platform.OS === "web") {
       localStorage.removeItem("token");
