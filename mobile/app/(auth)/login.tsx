@@ -1,12 +1,6 @@
 import { useState, useContext } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Link } from "expo-router";
 
 import { AuthContext } from "../../context/AuthContext";
 import { layout } from "@/theme/layout";
@@ -23,8 +17,8 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await login(email, password);
-    } catch (error) {
-      alert("Credenciales inválidas");
+    } catch (error: any) {
+      alert(error?.message || "Credenciales inválidas");
     } finally {
       setLoading(false);
     }
@@ -33,7 +27,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={layout.container}>
       <View style={layout.card}>
-        <Text style={layout.title}>User Login</Text>
+        <Text style={layout.title}>Iniciar Sesión</Text>
 
         <TextInput
           placeholder="Email"
@@ -42,6 +36,7 @@ export default function LoginScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           style={{
+            backgroundColor: "#fff",
             borderWidth: 1,
             borderColor: "#ddd",
             borderRadius: 8,
@@ -58,6 +53,7 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           style={{
+            backgroundColor: "#fff",
             borderWidth: 1,
             borderColor: "#ddd",
             borderRadius: 8,
@@ -75,6 +71,7 @@ export default function LoginScreen() {
             padding: 14,
             borderRadius: 8,
             alignItems: "center",
+            marginBottom: 16,
           }}
         >
           {loading ? (
@@ -85,6 +82,27 @@ export default function LoginScreen() {
             </Text>
           )}
         </TouchableOpacity>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 8,
+          }}
+        >
+          <Link
+            href="/(auth)/register"
+            style={{ color: colors.primary, fontWeight: "600" }}
+          >
+            Crear cuenta
+          </Link>
+
+          <TouchableOpacity onPress={() => alert("Función no implementada")}>
+            <Text style={{ color: colors.primary, fontWeight: "600" }}>
+              Recuperar contraseña
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );

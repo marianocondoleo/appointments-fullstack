@@ -1,9 +1,10 @@
+// backend/src/server.ts
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { prisma } from "./prisma";
 import authRoutes from "./routes/auth";
-import appointmentsRoutes from "./routes/appointments";
+import tasksRoutes from "./routes/tasks"; // antes appointmentsRoutes
 
 const app = express();
 
@@ -17,14 +18,14 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 
 // ===============================
-// APPOINTMENTS ROUTES
+// TASKS ROUTES
 // ===============================
-app.use("/appointments", appointmentsRoutes);
+app.use("/tasks", tasksRoutes);
 
 // ===============================
 // HEALTHCHECK
 // ===============================
-app.get("/health", async (req, res) => {
+app.get("/health", async (_req, res) => {
   try {
     const result = await prisma.$queryRaw`SELECT 1 as ok`;
     res.json({ status: "ok", db: result });
@@ -34,53 +35,15 @@ app.get("/health", async (req, res) => {
 });
 
 // ===============================
-// USERS
+// USERS ROUTES
 // ===============================
-app.get("/users", async (req, res) => {
+app.get("/users", async (_req, res) => {
   try {
     const users = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
     });
 
     res.json(users);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ===============================
-// APPOINTMENTS
-// ===============================
-app.post("/appointments", async (req, res) => {
-  try {
-    const { userId, date, notes } = req.body;
-
-    if (!userId || !date) {
-      return res.status(400).json({ error: "userId and date are required" });
-    }
-
-    const appointment = await prisma.appointment.create({
-      data: {
-        userId,
-        date: new Date(date),
-        notes,
-      },
-    });
-
-    res.status(201).json(appointment);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/appointments", async (req, res) => {
-  try {
-    const appointments = await prisma.appointment.findMany({
-      include: { user: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.json(appointments);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

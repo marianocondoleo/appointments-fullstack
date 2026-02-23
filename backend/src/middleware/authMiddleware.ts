@@ -22,12 +22,19 @@ export const authMiddleware = (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
-    ) as { userId: string };
+    ) as any;
 
-    req.userId = decoded.userId;
+    // 👇 soporta tanto id como userId
+    req.userId = decoded.userId || decoded.id;
+
+    if (!req.userId) {
+      return res.status(401).json({ error: "Invalid token payload" });
+    }
+
     next();
   } catch (error) {
     return res.status(401).json({ error: "Invalid token" });
   }
 };
- export default authMiddleware;
+
+export default authMiddleware;

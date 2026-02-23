@@ -23,9 +23,9 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="appointments"
+        name="tasks"
         options={{
-          title: "Turnos",
+          title: "Tareas",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" color={color} size={size} />
           ),
