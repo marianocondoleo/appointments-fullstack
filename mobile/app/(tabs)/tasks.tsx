@@ -5,14 +5,15 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  TextInput,
   Alert,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
 import { api } from "@/lib/api";
 import { layout } from "@/theme/layout";
-import { components } from "@/theme/components";
 import { colors } from "@/theme/colors";
 
 type Task = {
@@ -28,13 +29,21 @@ export default function TasksScreen() {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
+  const [searchText, setSearchText] = useState("");
 
-  // Traer tareas
   const fetchTasks = async () => {
     try {
       setLoading(true);
       const res = await api.get("/tasks");
-      setTasks(res.data);
+
+      // Ordenar por deadline ascendente
+      const sortedTasks = res.data.sort(
+        (a: Task, b: Task) =>
+          new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+      );
+
+      setTasks(sortedTasks);
     } catch (err) {
       console.error("Error fetching tasks:", err);
     } finally {
@@ -46,7 +55,6 @@ export default function TasksScreen() {
     fetchTasks();
   }, []);
 
-  // Eliminar tarea
   const handleDelete = async (id: string) => {
     Alert.alert("Confirmar", "¿Querés eliminar esta tarea?", [
       { text: "Cancelar", style: "cancel" },
@@ -57,7 +65,7 @@ export default function TasksScreen() {
           try {
             await api.delete(`/tasks/${id}`);
             Alert.alert("Éxito", "Tarea eliminada");
-            fetchTasks(); // refrescar lista
+            fetchTasks();
           } catch (err) {
             console.error(err);
             Alert.alert("Error", "No se pudo eliminar la tarea");
@@ -67,16 +75,25 @@ export default function TasksScreen() {
     ]);
   };
 
-  const getStatusColor = (status: Task["status"]) => {
+  const toggleNotes = (id: string) => {
+    setExpandedNotes((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const filteredTasks = tasks.filter((task) =>
+    task.title.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const getStatusLabel = (status: Task["status"]) => {
     switch (status) {
       case "ANALISIS":
-        return "#f59e0b"; // amarillo
+        return "En análisis";
       case "IN_PROGRESS":
-        return "#3b82f6"; // azul
+        return "En progreso";
       case "COMPLETED":
-        return "#10b981"; // verde
-      default:
-        return "#666";
+        return "Completada";
     }
   };
 
@@ -90,18 +107,21 @@ export default function TasksScreen() {
         return "Alta";
     }
   };
+
+  const getStatusColor = (status: Task["status"]) => "#666"; // gris siempre
+
   const getPriorityColor = (priority: Task["priority"]) => {
-  switch (priority) {
-    case "LOW":
-      return "#10b981"; // verde
-    case "MEDIUM":
-      return "#f59e0b"; // amarillo
-    case "HIGH":
-      return "#ef4444"; // rojo
-    default:
-      return "#666";
-  }
-};
+    switch (priority) {
+      case "LOW":
+        return "#10b981"; // verde
+      case "MEDIUM":
+        return "#f59e0b"; // amarillo
+      case "HIGH":
+        return "#ef4444"; // rojo
+      default:
+        return "#666";
+    }
+  };
 
   if (loading) {
     return (
@@ -113,92 +133,128 @@ export default function TasksScreen() {
 
   return (
     <SafeAreaView style={layout.container}>
+      {/* Buscador */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+        <TextInput
+          placeholder="Buscar tarea por título..."
+          value={searchText}
+          onChangeText={setSearchText}
+          style={{
+            backgroundColor: "#f1f5f9",
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            fontSize: 14,
+            color: "#000",
+          }}
+        />
+      </View>
+
+      {/* Lista de tareas */}
       <FlatList
-        data={tasks}
+        data={filteredTasks}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
         ListEmptyComponent={() => (
-          <Text style={{ fontSize: 16, color: "#666", textAlign: "center" }}>No hay tareas creadas aún.</Text>
-        )}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              components.userItem,
-              { padding: 16, marginBottom: 12 },
-            ]}
+          <Text
+            style={{
+              fontSize: 16,
+              color: "#666",
+              textAlign: "center",
+              marginTop: 40,
+            }}
           >
-            <Text style={components.userName}>{item.title}</Text>
-
-            <Text style={{ marginTop: 4, fontSize: 14, color: "#666" }}>
-              Deadline: {new Date(item.deadline).toLocaleDateString("es-AR")}
-            </Text>
-
-            <View style={{ flexDirection: "row", marginTop: 6, alignItems: "center" }}>
-              <Text
-                style={{
-                  color: "#fff",
-                  backgroundColor: getStatusColor(item.status),
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
-                  borderRadius: 4,
-                  fontSize: 12,
-                  marginRight: 8,
-                }}
-              >
-                {item.status.replace("_", " ")}
-              </Text>
-
-              <Text
-                style={{
-                  color: "#fff",
-                  backgroundColor: getPriorityColor(item.priority),
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
-                  borderRadius: 4,
-                  fontSize: 12,
-                }}
-              >
-                {getPriorityLabel(item.priority)}
-              </Text>
-            </View>
-
-            {item.notes ? (
-              <Text style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
-                {item.notes}
-              </Text>
-            ) : null}
-
-            <View style={{ flexDirection: "row", marginTop: 12, justifyContent: "flex-end" }}>
-              <TouchableOpacity
-                onPress={() => router.push(`/tasks/edit/${item.id}`)}
-                style={{
-                  marginRight: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  backgroundColor: colors.primary,
-                  borderRadius: 6,
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Editar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleDelete(item.id)}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  backgroundColor: "#ef4444",
-                  borderRadius: 6,
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Eliminar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+            No hay tareas que coincidan con la búsqueda.
+          </Text>
         )}
+        renderItem={({ item }) => {
+          const formattedDate = new Date(item.deadline).toLocaleDateString(
+            "es-AR"
+          );
+
+          return (
+            <View
+              style={{
+                padding: 16,
+                marginBottom: 12,
+                borderRadius: 12,
+                backgroundColor: "#eff6ff",
+                elevation: 3,
+              }}
+            >
+              {/* Primera línea: Título + Status + Prioridad */}
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: "#000" }}>
+                  {item.title}{" "}
+                  <Text
+                    style={{
+                      color: getStatusColor(item.status),
+                      fontStyle: "italic",                 
+                      fontWeight: "600",
+                    }}
+                  >
+                    ({getStatusLabel(item.status)})
+                  </Text>
+                </Text>
+
+                <Text
+                  style={{
+                    color: getPriorityColor(item.priority),
+                    fontWeight: "800",
+                    fontSize: 14,
+                    fontStyle: "italic",
+                  }}
+                >
+                  Prioridad {getPriorityLabel(item.priority)}
+                </Text>
+              </View>
+
+              {/* Deadline */}
+              <Text style={{ marginTop: 4, fontSize: 14, color: "#666" }}>
+                {formattedDate}
+              </Text>
+
+              {/* Notas como desplegable */}
+              {item.notes ? (
+                <TouchableOpacity
+                  onPress={() => toggleNotes(item.id)}
+                  style={{ marginTop: 8 }}
+                >
+                  <Text style={{ color: "#666", fontSize: 14 }}>
+                    {expandedNotes[item.id] ? "Ocultar ▲" : "Ver más ▼"}
+                  </Text>
+
+                  {expandedNotes[item.id] && (
+                    <Text style={{ marginTop: 4, fontSize: 14, color: "#666" }}>
+                      {item.notes}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ) : null}
+
+              {/* Botones como iconos */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  marginTop: 12,
+                  justifyContent: "flex-end",
+                  gap: 16,
+                }}
+              >
+                <TouchableOpacity onPress={() => router.push(`/tasks/edit/${item.id}`)}>
+                  <Feather name="edit" size={20} color={colors.primary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                  <Feather name="trash-2" size={20} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        }}
       />
 
-      {/* Botón para agregar tarea */}
+      {/* Botón agregar tarea */}
       <TouchableOpacity
         onPress={() => router.push("/tasks/newTask")}
         style={{
@@ -209,9 +265,7 @@ export default function TasksScreen() {
           margin: 16,
         }}
       >
-        <Text style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}>
-          Agregar Tarea
-        </Text>
+          <Feather name="plus-circle" size={20} color="#fff" />
       </TouchableOpacity>
     </SafeAreaView>
   );

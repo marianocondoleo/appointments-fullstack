@@ -97,11 +97,11 @@ export default function HomeScreen() {
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case "HIGH":
-        return { color: "#b91c1c", background: "#fee2e2", label: "Alta" };
+        return { color: "#ef4444", background: "#fee2e2", label: "Alta" };
       case "MEDIUM":
-        return { color: "#b45309", background: "#fef3c7", label: "Media" };
+        return { color: "#f59e0b", background: "#fef3c7", label: "Media" };
       default:
-        return { color: "#065f46", background: "#d1fae5", label: "Baja" };
+        return { color: "#10b981", background: "#d1fae5", label: "Baja" };
     }
   };
 
@@ -116,7 +116,6 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={layout.container}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {/* <Text style={layout.title}>Dashboard</Text> */}
 
         <Text
           style={{

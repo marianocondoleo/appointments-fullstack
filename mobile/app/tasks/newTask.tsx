@@ -187,7 +187,7 @@ export default function NewTaskScreen() {
                   onPress={() => setStatus(s as any)}
                   style={{
                     paddingVertical: 6,
-                    paddingHorizontal: 12,
+                    paddingHorizontal: 10,
                     borderRadius: 6,
                     backgroundColor:
                       status === s ? colors.primary : "#e5e7eb",
