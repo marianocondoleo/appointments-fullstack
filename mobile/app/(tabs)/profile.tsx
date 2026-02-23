@@ -36,10 +36,6 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={layout.container}>
       <View style={[layout.card, styles.card]}>
-        <Text style={[layout.title, styles.title]}>Mi Perfil</Text>
-
-        <View style={styles.divider} />
-
         <View style={styles.section}>
           <ProfileItem
             label="Nombre"
@@ -49,10 +45,11 @@ export default function ProfileScreen() {
           {user.phone && <ProfileItem label="Teléfono" value={user.phone} />}
           {user.address && <ProfileItem label="Dirección" value={user.address} />}
         </View>
-
-        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
+                <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Cerrar Sesión</Text>
         </TouchableOpacity>
+
+
       </View>
     </SafeAreaView>
   );
@@ -103,12 +100,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   logoutButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: "red",
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
     elevation: 2,
   },
+
   logoutText: {
     color: "#fff",
     fontWeight: "600",
