@@ -1,4 +1,3 @@
-// (tabs)/newTask.tsx
 import { useState, useEffect } from "react";
 import {
   SafeAreaView,
@@ -11,8 +10,7 @@ import {
   Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -30,8 +28,9 @@ if (Platform.OS === "web") {
   require("react-datepicker/dist/react-datepicker.css");
 }
 
-export default function NewTaskScreen() {
+export default function EditTaskScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -41,18 +40,40 @@ export default function NewTaskScreen() {
     useState<"ANALISIS" | "IN_PROGRESS" | "COMPLETED">("ANALISIS");
   const [priority, setPriority] =
     useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  /* ================= TRAER DATA ================= */
+
+  const fetchTask = async () => {
+    try {
+      const res = await api.get(`/tasks/${id}`);
+      const task = res.data;
+
+      setTitle(task.title);
+      setNotes(task.notes || "");
+      setStatus(task.status);
+      setPriority(task.priority);
+      setDeadline(new Date(task.deadline));
+    } catch (error) {
+      Alert.alert("Error", "No se pudo cargar la tarea");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    AsyncStorage.getItem("token");
-  }, []);
+    if (id) fetchTask();
+  }, [id]);
 
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     if (Platform.OS !== "ios") setShowDatePicker(false);
     if (selectedDate) setDeadline(selectedDate);
   };
 
-  const handleSubmit = async () => {
+  /* ================= ACTUALIZAR ================= */
+
+  const handleUpdate = async () => {
     if (!title.trim()) {
       Alert.alert("Error", "El título es obligatorio");
       return;
@@ -64,40 +85,36 @@ export default function NewTaskScreen() {
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
 
+      await api.put(`/tasks/${id}`, {
+        title,
+        notes,
+        deadline: deadline.toISOString(),
+        status,
+        priority,
+      });
 
-      await api.post(
-        "/tasks",
-        {
-          title,
-          notes,
-          deadline: deadline.toISOString(),
-          status,
-          priority,
-        },
-
-      );
-
-      Alert.alert("Éxito", "Tarea creada correctamente");
+      Alert.alert("Éxito", "Tarea actualizada correctamente");
       router.replace("/(tabs)/tasks");
     } catch (error: any) {
       Alert.alert(
         "Error",
-        error.response?.data?.error ||
-          error.response?.data?.message ||
-          "No se pudo crear la tarea"
+        error.response?.data?.message ||
+          "No se pudo actualizar la tarea"
       );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) return null;
 
   return (
     <SafeAreaView style={layout.container}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <View style={layout.card}>
-          <Text style={layout.title}>Nueva Tarea</Text>
+          <Text style={layout.title}>Editar Tarea</Text>
 
           {/* Título */}
           <TextInput
@@ -139,7 +156,6 @@ export default function NewTaskScreen() {
               timeIntervals={15}
               dateFormat="dd/MM/yyyy HH:mm"
               minDate={new Date()}
-              placeholderText="Seleccionar fecha y hora"
               locale={es}
               className="react-datepicker-custom"
             />
@@ -248,59 +264,63 @@ export default function NewTaskScreen() {
             </View>
           </View>
 
-          {/* BOTONES */}
-          <View
-            style={{
-              marginTop: 24,
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => router.push("/(tabs)/tasks")}
-              style={{
-                backgroundColor: "#6b7280",
-                padding: 16,
-                borderRadius: 8,
-                flex: 1,
-                marginRight: 8,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: "#fff",
-                  fontWeight: "600",
-                  fontSize: 16,
-                }}
-              >
-                Volver
-              </Text>
-            </TouchableOpacity>
+        {/* BOTONES */}
+<View
+  style={{
+    marginTop: 24,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  }}
+>
+  <TouchableOpacity
+    onPress={() => router.push("/(tabs)/tasks")}
+    style={{
+      backgroundColor: "#6b7280",
+      padding: 16,
+      borderRadius: 8,
+      flex: 1,
+      marginRight: 8,
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Text
+      style={{
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 16,
+      }}
+    >
+      Volver
+    </Text>
+  </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={loading}
-              style={{
-                backgroundColor: colors.primary,
-                padding: 16,
-                borderRadius: 8,
-                flex: 1,
-                marginLeft: 8,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: "#fff",
-                  fontWeight: "600",
-                  fontSize: 16,
-                }}
-              >
-                {loading ? "Guardando..." : "Crear Tarea"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+  <TouchableOpacity
+  onPress={handleUpdate}
+  disabled={saving}
+  style={{
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  <Text
+    style={{
+      color: "#fff",
+      fontWeight: "600",
+      fontSize: 16,
+      textAlign: "center",
+      width: "100%",
+    }}
+  >
+    {saving ? "Guardando..." : "Guardar Cambios"}
+  </Text>
+</TouchableOpacity>
+</View>
         </View>
       </ScrollView>
     </SafeAreaView>

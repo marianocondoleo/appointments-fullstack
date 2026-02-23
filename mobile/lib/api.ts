@@ -2,7 +2,7 @@
 import axios from "axios";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 let baseURL = "";
 
@@ -21,15 +21,23 @@ export const api = axios.create({
   baseURL,
 });
 
-/* 🔥 INTERCEPTOR AUTOMÁTICO */
+/* 🔥 INTERCEPTOR AUTOMÁTICO CONSISTENTE CON AUTHCONTEXT */
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem("token");
+    let token: string | null = null;
 
-    if (token) {
-      if (config.headers) {
+    try {
+      if (Platform.OS === "web") {
+        token = localStorage.getItem("token");
+      } else {
+        token = await SecureStore.getItemAsync("token");
+      }
+
+      if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+    } catch (error) {
+      console.log("Error getting token:", error);
     }
 
     return config;

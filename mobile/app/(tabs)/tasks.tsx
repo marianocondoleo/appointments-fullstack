@@ -118,7 +118,7 @@ export default function TasksScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
         ListEmptyComponent={() => (
-          <Text>No hay tareas creadas aún.</Text>
+          <Text style={{ fontSize: 16, color: "#666", textAlign: "center" }}>No hay tareas creadas aún.</Text>
         )}
         renderItem={({ item }) => (
           <View
