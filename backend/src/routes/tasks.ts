@@ -88,4 +88,28 @@ router.delete("/:id", async (req: any, res) => {
   }
 });
 
+// GET /tasks/:id
+router.get("/:id", async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const task = await prisma.task.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json(task);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al traer tarea" });
+  }
+});
+
 export default router;

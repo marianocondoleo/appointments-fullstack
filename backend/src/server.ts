@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import { prisma } from "./prisma";
 import authRoutes from "./routes/auth";
-import tasksRoutes from "./routes/tasks"; // antes appointmentsRoutes
+import tasksRoutes from "./routes/tasks"; 
 
 const app = express();
 
@@ -48,6 +48,8 @@ app.get("/users", async (_req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // ===============================
 // START SERVER
