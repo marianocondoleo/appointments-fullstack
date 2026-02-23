@@ -25,7 +25,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={layout.container}>
+    <SafeAreaView style={[layout.container, { justifyContent: "center" }]}>
       <View style={layout.card}>
         <Text style={layout.title}>Iniciar Sesión</Text>
 

@@ -130,7 +130,7 @@ export default function TasksScreen() {
             <Text style={components.userName}>{item.title}</Text>
 
             <Text style={{ marginTop: 4, fontSize: 14, color: "#666" }}>
-              Deadline: {new Date(item.deadline).toLocaleString()}
+              Deadline: {new Date(item.deadline).toLocaleDateString("es-AR")}
             </Text>
 
             <View style={{ flexDirection: "row", marginTop: 6, alignItems: "center" }}>
