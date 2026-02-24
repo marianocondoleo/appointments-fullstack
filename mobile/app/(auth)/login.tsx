@@ -99,7 +99,7 @@ export default function LoginScreen() {
 
           <TouchableOpacity onPress={() => alert("Función no implementada")}>
             <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Recuperar contraseña
+              Olvidé mi contraseña
             </Text>
           </TouchableOpacity>
         </View>
