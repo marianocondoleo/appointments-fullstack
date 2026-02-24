@@ -1,4 +1,4 @@
-# Appointments Fullstack (Expo + Node + Prisma + Neon)
+# Tasks-SaaS Fullstack (Expo + Node + Prisma + Neon)
 
 Fullstack project for appointment booking.
 
